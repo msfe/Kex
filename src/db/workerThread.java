@@ -15,10 +15,9 @@ import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
-import twitter4j.Twitter;
-import twitter4j.TwitterFactory;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
+import classifier.Caller;
 
 import com.cybozu.labs.langdetect.Detector;
 import com.cybozu.labs.langdetect.DetectorFactory;
@@ -35,8 +34,9 @@ public class workerThread extends Thread {
 
 	private Connection connect = null;
 	private PreparedStatement preparedStatement = null;
-	JSONObject json;
-	Twitter twitter = TwitterFactory.getSingleton();
+	private JSONObject json;
+	//private Twitter twitter = TwitterFactory.getSingleton();
+	private Caller classify;
 
 	public workerThread() {
 
@@ -44,6 +44,8 @@ public class workerThread extends Thread {
 			// Init DB
 			connect = DriverManager.getConnection("jdbc:mysql://localhost/kex?"
 					+ "user=worker&password=workerpw");
+			// Init Caller
+			classify = new Caller();
 			// Init Language detection
 			try {
 				DetectorFactory.loadProfile(".\\profiles");
@@ -55,6 +57,7 @@ public class workerThread extends Thread {
 			runTwitterStream();
 
 		} catch (SQLException e) {
+			System.out.println("sql error");
 
 		}
 
@@ -67,12 +70,26 @@ public class workerThread extends Thread {
 			public void onStatus(Status status) {
 				try {
 					parseJSON(status);
-					if (checkEnglish(json.getString("tweet"))) {
-						TweetToDB(json.getString("strid"),
-								json.getString("tweet"),
-								json.getInt("followers_count"));
+					if (json.getInt("followers_count") < 50 || json.getString("tweet").equals("")) {
+
+					} else {
+						if (checkEnglish(json.getString("tweet"))) {
+							json.accumulate("category1", classify
+									.categorizeFirst(json.getString("tweet")));
+							json.accumulate(
+									"category2",
+									classify.categorizeSecound(
+											json.getString("tweet"),
+											json.getString("category1")));
+							TweetToDB(json.getString("strid"),
+									json.getString("tweet"),
+									json.getInt("followers_count"),
+									json.getString("category1"),
+									json.getString("category2"));
+						}
 					}
 				} catch (SQLException | JSONException e) {
+					e.printStackTrace();
 				}
 
 			}
@@ -134,13 +151,16 @@ public class workerThread extends Thread {
 			if (words[i].contains("#")) {
 				continue;
 			}
-			if (words[i].toLowerCase().startsWith("http")) {
+			if (words[i].equals("RT")) {
 				continue;
+			}
+			if (words[i].toLowerCase().startsWith("http")) {
+				return "";
 			}
 
 			ok.addLast(words[i]);
 		}
-		if (ok.size() > 2) {
+		if (ok.size() >= 7) {
 			for (String word : ok) {
 				sb.append(word + " ");
 			}
@@ -149,9 +169,10 @@ public class workerThread extends Thread {
 		return "";
 	}
 
-	public void TweetToDB(String twitterID, String tweet, int followers)
-			throws SQLException {
-		int InternalId = createObjectInTweets(twitterID, tweet, followers);
+	public void TweetToDB(String twitterID, String tweet, int followers,
+			String category1, String category2) throws SQLException {
+		int InternalId = createObjectInTweets(twitterID, tweet, followers,
+				category1, category2);
 		if (InternalId == 0) {
 			return;
 		}
@@ -159,8 +180,7 @@ public class workerThread extends Thread {
 
 	}
 
-	private void createTRIMap(int internalId, String tweet)
-			throws SQLException {
+	private void createTRIMap(int internalId, String tweet) throws SQLException {
 		String[] strParts = tweet.split(" ");
 		int count = 0;
 		while (count < strParts.length - 2) {
@@ -176,30 +196,33 @@ public class workerThread extends Thread {
 		}
 	}
 
-	private int createObjectInTweets(String twitterID, String tweet, int followers)
+	private int createObjectInTweets(String twitterID, String tweet,
+			int followers, String category1, String category2)
 			throws SQLException {
 		// Check that this tweet aint in dataBase
 		Statement statement = connect.createStatement();
-		
+
 		ResultSet r = statement
 				.executeQuery("SELECT InternalID FROM kex.tweets where TwitterID = "
 						+ twitterID);
 		try {
 			r.next();
 			r.getString("InternalID");
-			//System.err.println("Tweet already in db");
-			return 0; //Tweet allready exsists in DB
+			// System.err.println("Tweet already in db");
+			return 0; // Tweet allready exsists in DB
 		} catch (Exception e) {
-			//Will end up here if it does not exsist in DB
+			// Will end up here if it does not exsist in DB
 		}
 
 		preparedStatement = connect
-				.prepareStatement("insert into kex.tweets values (default, ?, ?, ?)");
+				.prepareStatement("insert into kex.tweets values (default, ?, ?, ?, ?, ?)");
 		// "twitterID, tweet, followers tweets from kex.tweets");
 		// Parameters start with 1
 		preparedStatement.setString(1, twitterID);
 		preparedStatement.setString(2, tweet);
 		preparedStatement.setLong(3, followers);
+		preparedStatement.setString(4, category1);
+		preparedStatement.setString(5, category2);
 		preparedStatement.executeUpdate();
 
 		// Get internal ID
@@ -222,7 +245,7 @@ public class workerThread extends Thread {
 				return true;
 			}
 		} catch (LangDetectException e) {
-
+			System.out.println("langdetect error");
 		}
 		// System.out.println("Ej engelska bekräftat");
 		return false;
