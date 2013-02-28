@@ -23,7 +23,7 @@ public class readThread extends Thread {
 
 	}
 
-	private static final String tweet = "I wish you could live your life instead of mine";
+	private static final String tweet = "I want to be a soccer player";
 	
 	public void test() throws SQLException {
 
