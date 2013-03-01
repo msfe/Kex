@@ -13,7 +13,7 @@ public class Caller {
    String readKeyNumber;
    String user; 
     public Caller(){
-    	readKeyNumber = "U2L5HeL3uGgFd38lAhk1mHkh8xA"; //readKey hårdkodat in
+    	readKeyNumber = "CKIVxyPCaz7VUZCiMnJbEIpSOnE"; //Hårdkodad
     	user = "uclassify";
     }
     
