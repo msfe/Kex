@@ -20,8 +20,8 @@ public class DatabaseConnection {
 		try {
 		Class.forName("com.mysql.jdbc.Driver");
 		//readDataBase();
-		//new workerThread();
-		new readThread();
+		new workerThread();
+		//new readThread();
 	
 		
 		} catch (Exception e) {
