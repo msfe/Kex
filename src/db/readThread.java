@@ -27,15 +27,12 @@ public class readThread extends Thread {
 	
 	public void test() throws SQLException {
 
-		int max;
 		LinkedList<String> hits = new LinkedList<String>();
 		try {
-			max =0;
 			Statement statement = connect.createStatement();
 			ResultSet r = statement
 					.executeQuery("SELECT * FROM kex.trimap");
 			while (r.next()) {
-				max++;
 				if(tweet.contains(r.getString("WORDS"))){
 					hits.add(r.getString("INTERNALID"));
 				}
