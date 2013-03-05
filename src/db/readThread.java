@@ -5,7 +5,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Hashtable;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
+
+import tribot.Triple;
 
 public class readThread extends Thread {
 
@@ -24,30 +26,30 @@ public class readThread extends Thread {
 
 	
 	
-	public Hashtable<String, String> TribotCaller(String tweet){
+	public LinkedHashSet<Triple> TribotCaller(String tweet){
 
-		LinkedList<String> hits = new LinkedList<String>();
-		Hashtable<String, String> resultTable = new Hashtable<String, String>();
+		Hashtable<String,String> hits = new Hashtable<String,String>();
+		LinkedHashSet<Triple> resultSet = new LinkedHashSet<Triple>();
 		try {
 			Statement statement = connect.createStatement();
 			ResultSet r = statement
 					.executeQuery("SELECT * FROM kex.trimap");
 			while (r.next()) {
 				if(tweet.contains(r.getString("WORDS"))){
-					hits.add(r.getString("INTERNALID"));
+					hits.put(r.getString("INTERNALID"),r.getString("WORDS"));
 				}
 			}
-			for(String InternalID: hits){
+			for(String InternalID: hits.keySet()){
 				statement = connect.createStatement();
 				r = statement
 						.executeQuery("SELECT TWEET FROM kex.tweets WHERE INTERNALID=" + InternalID);
 				r.next();
-				resultTable.put(InternalID,(r.getString("Tweet")));
+				resultSet.add(new Triple(hits.get(InternalID), r.getString("Tweet"), InternalID));
 			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return resultTable;
+		return resultSet;
 	}
 }

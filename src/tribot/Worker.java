@@ -1,6 +1,6 @@
 package tribot;
 
-import java.util.Hashtable;
+import java.util.LinkedHashSet;
 
 import db.readThread;
 
@@ -15,9 +15,13 @@ public class Worker {
 	}
 
 	public String newTweet(String tweet) {
-		Hashtable<String, String> result = read.TribotCaller(tweet);
-		for (String key : result.keySet()) {
-			System.out.println(result.get(key));
+		LinkedHashSet<Triple> result = read.TribotCaller(tweet);
+
+		
+		for(Triple triple: result){
+			System.out.println(triple.tweet);
+			//Find where the tweets match
+			
 		}
 		return bestAnswer;
 
