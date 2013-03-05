@@ -2,9 +2,9 @@ package tribot;
 
 public class Triple {
 
-	String words;
-	String tweet;
-	String id;
+	private String words;
+	private String tweet;
+	private String id;
 
 	public Triple(String words, String tweet, String id) {
 		this.words = words;
