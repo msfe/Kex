@@ -42,9 +42,9 @@ public class readThread extends Thread {
 			for(String InternalID: hits.keySet()){
 				statement = connect.createStatement();
 				r = statement
-						.executeQuery("SELECT TWEET FROM kex.tweets WHERE INTERNALID=" + InternalID);
+						.executeQuery("SELECT TWEET,TWITTERID FROM kex.tweets WHERE INTERNALID=" + InternalID);
 				r.next();
-				resultSet.add(new Triple(hits.get(InternalID), r.getString("Tweet"), InternalID));
+				resultSet.add(new Triple(hits.get(InternalID), r.getString("Tweet"), r.getString("TWITTERID")));
 			}
 			
 		} catch (Exception e) {

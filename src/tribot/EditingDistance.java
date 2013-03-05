@@ -1,18 +1,16 @@
 package tribot;
 
-import java.util.LinkedList;
 
 public class EditingDistance {
 
-	LinkedList<String> closestWords = null;
-	int closestDistance = 140;
-	int[][] matrix = new int[141][141];
-	int colWordLen;
-	int rowWordLen;
-	int lendif;
-	int col;
-	int row;
-	int end;
+	private int closestDistance = 140;
+	private int[][] matrix = new int[141][141];
+	private int colWordLen;
+	private int rowWordLen;
+	private int lendif;
+	private int col;
+	private int row;
+	private int end;
 
 	public EditingDistance() {
 	}
