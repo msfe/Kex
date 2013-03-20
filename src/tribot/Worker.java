@@ -6,8 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.lang3.StringUtils;
-
 import db.readThread;
 
 public class Worker {
@@ -20,11 +18,7 @@ public class Worker {
 		distance = new EditingDistance();
 	}
 
-	public HashMap<String, Integer> newTweet(String tweet) {
-		int startTweetA;
-		int startTweetB;
-		int lengthTweetA = tweet.length();
-		String words;
+	public TreeMap<String, Integer> newTweet(String tweet) {
 		String compare ="";
 		HashMap<String,Integer> map = new HashMap<String,Integer>();
         ValueComparator bvc =  new ValueComparator(map);
@@ -33,35 +27,19 @@ public class Worker {
 		
 
 		for (Triple triple : result) {
-			// Find where the tweets match
-			words = triple.getWords();
-			startTweetA = tweet.indexOf(words);
-			startTweetB = triple.getTweet().indexOf(words);
-			
-			
-			if(startTweetA>startTweetB){
-				compare = StringUtils.leftPad(triple.getTweet(), startTweetA+(triple.getTweet().length()-startTweetB), '*');
-				compare = compare.substring(0, lengthTweetA);
-			}
-			if(startTweetA<startTweetB){
-				compare = triple.getTweet().substring(startTweetB-startTweetA);
-				if (compare.length()>lengthTweetA){
-					compare = compare.substring(0,lengthTweetA);
-				}
-			}
-			
+			compare = triple.getWords();
 			distance.WFMatrix(tweet, compare);
 			map.put(triple.getId(),distance.Distance(tweet, compare));
 			
-			/* Läsbar Output
-			map.put(triple.getTweet(),distance.Distance(tweet, compare));
-			*/
+			// Läsbar Output
+			//map.put(triple.getTweet(),distance.Distance(tweet, compare));
+			
 
 		}
 		
         sorted_map.putAll(map);
         
-		return map;
+		return sorted_map;
 
 	}
 	
