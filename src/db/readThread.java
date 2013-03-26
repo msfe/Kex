@@ -69,11 +69,6 @@ public class readThread extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		for (String key : resultSet.keySet()) {
-			System.out.printf("Twitterid: %s \t Tweet: %s\n", key,
-					resultSet.get(key));
-
-		}
 
 		return resultSet;
 	}
