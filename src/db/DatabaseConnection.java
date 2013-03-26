@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import tribot.Worker;
+
 
 public class DatabaseConnection {
 
@@ -20,9 +22,11 @@ public class DatabaseConnection {
 		try {
 		Class.forName("com.mysql.jdbc.Driver");
 		//readDataBase();
-		new workerThread();
+		//new workerThread();
 		//new readThread();
-	
+		Worker dummy = new Worker();
+		dummy.newTweet("I am so in love right now");
+		
 		
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

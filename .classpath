@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="lib/langdetect.jar"/>
 	<classpathentry kind="lib" path="lib/jsonic-1.2.5.jar"/>
 	<classpathentry kind="lib" path="lib/uclassify-java-sdk.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
