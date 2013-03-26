@@ -1,11 +1,14 @@
 package main;
 
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import tribot.Worker;
 import twitter4j.PagableResponseList;
+import twitter4j.RelatedResults;
 import twitter4j.ResponseList;
 import twitter4j.Status;
 import twitter4j.StatusUpdate;
@@ -13,6 +16,7 @@ import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.User;
+import twitter4j.UserMentionEntity;
 
 import com.cybozu.labs.langdetect.Detector;
 import com.cybozu.labs.langdetect.DetectorFactory;
@@ -54,7 +58,7 @@ public class Main {
 					e.printStackTrace();
 				}
 				System.out.println("start");
-				System.out.println(tribot.newTweet("I want to have some nice things"));
+				findResponse(tribot.newTweet("I want to have some nice things"));
 				/*
 				Set<String> friends = lastTweetID.keySet();
 				int numberOfFriends = friends.size();
@@ -107,13 +111,39 @@ public class Main {
 		}
 		if (checkEnglish(tweet)) {
 			 TreeMap<String, Integer> bestAnswers = tribot.newTweet(tweet);
-			String response = "";//TODO Find response
-			postResponse(response, userName);
-//			System.out.println(response); // TODO post to twitter instead
+			String response = findResponse(bestAnswers);
+			//postResponse(response, userName);
+			System.out.println(response); //Use this to read here instead of posting
 		}
 	}
 	
 	
+			private String findResponse(TreeMap<String, Integer> bestAnswers) {
+				Map.Entry<String, Integer> sugestion;
+				String twitterId;
+				boolean run = true;
+		while(!bestAnswers.isEmpty() && run){
+			sugestion = bestAnswers.pollFirstEntry();
+			twitterId = sugestion.getKey();
+			try {
+				RelatedResults relatedResults = twitter.getRelatedResults(new Long(twitterId));
+				ResponseList<Status> replys = relatedResults.getTweetsWithReply();
+				for(Status s : replys){
+					System.out.println(s.getText());
+					run = false;
+				}
+				/*List<Status> mentionStatuts = null;
+			      mentionStatuts = twitter.getMentionsTimeline();
+			      for( Status status1 : mentionStatuts){
+			      if( status.getId() == status1.getInReplyToStatusId()){*/
+			} catch (NumberFormatException | TwitterException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return "Awesome!";
+	}
+
 			/**
 			 * Initializes the language detection library and twitter.
 			 * 
