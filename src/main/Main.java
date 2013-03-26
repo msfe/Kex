@@ -22,6 +22,7 @@ import com.cybozu.labs.langdetect.Detector;
 import com.cybozu.labs.langdetect.DetectorFactory;
 import com.cybozu.labs.langdetect.LangDetectException;
 
+import db.readThread;
 import db.workerThread;
 
 public class Main {
