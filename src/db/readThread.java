@@ -3,55 +3,53 @@ package db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
+import java.util.Hashtable;
+import java.util.LinkedHashSet;
+
+import tribot.Triple;
 
 public class readThread extends Thread {
 
 	private Connection connect = null;
-
+	
 	public readThread() {
 		try {
 			// Init DB
 			connect = DriverManager.getConnection("jdbc:mysql://localhost/kex?"
 					+ "user=worker&password=workerpw");
-			test();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	private static final String tweet = "I want to be a soccer player";
 	
-	public void test() throws SQLException {
+	
+	public LinkedHashSet<Triple> TribotCaller(String tweet){
 
-		int max;
-		LinkedList<String> hits = new LinkedList<String>();
+		Hashtable<String,String> hits = new Hashtable<String,String>();
+		LinkedHashSet<Triple> resultSet = new LinkedHashSet<Triple>();
 		try {
-			max =0;
 			Statement statement = connect.createStatement();
 			ResultSet r = statement
 					.executeQuery("SELECT * FROM kex.trimap");
 			while (r.next()) {
-				max++;
 				if(tweet.contains(r.getString("WORDS"))){
-					hits.add(r.getString("INTERNALID"));
+					hits.put(r.getString("INTERNALID"),r.getString("WORDS"));
 				}
 			}
-			for(String InternalID: hits){
+			for(String InternalID: hits.keySet()){
 				statement = connect.createStatement();
 				r = statement
-						.executeQuery("SELECT TWEET FROM kex.tweets WHERE INTERNALID=" + InternalID);
+						.executeQuery("SELECT TWEET,TWITTERID FROM kex.tweets WHERE INTERNALID=" + InternalID);
 				r.next();
-				System.out.println(r.getString("Tweet"));
+				resultSet.add(new Triple(hits.get(InternalID), r.getString("Tweet"), r.getString("TWITTERID")));
 			}
 			
-			System.out.println("done!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return resultSet;
 	}
-
 }
